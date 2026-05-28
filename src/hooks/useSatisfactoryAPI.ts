@@ -15,7 +15,7 @@ import { useAppStore } from '@/store'
 // ============================================================
 
 export function useSatisfactoryAPI() {
-  const { settings, setConnectionStatus } = useAppStore()
+  const settings = useAppStore((s) => s.settings)
 
   useEffect(() => {
     setApiBaseUrl(settings.apiUrl)
