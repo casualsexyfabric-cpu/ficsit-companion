@@ -1,0 +1,106 @@
+import { useQuery } from '@tanstack/react-query'
+import { useEffect } from 'react'
+import {
+  fetchPowerData,
+  fetchFactories,
+  fetchContainers,
+  fetchPlayers,
+  fetchTrains,
+  setApiBaseUrl,
+} from '@/services/satisfactoryApi'
+import { useAppStore } from '@/store'
+
+// ============================================================
+// HOOK BASE — sincroniza la URL y el estado de conexión
+// ============================================================
+
+export function useSatisfactoryAPI() {
+  const { settings, setConnectionStatus } = useAppStore()
+
+  useEffect(() => {
+    setApiBaseUrl(settings.apiUrl)
+  }, [settings.apiUrl])
+
+  const isEnabled = Boolean(settings.apiUrl)
+
+  return { isEnabled, pollingInterval: settings.pollingInterval }
+}
+
+// ============================================================
+// HOOKS ESPECÍFICOS POR RECURSO
+// ============================================================
+
+export function usePowerData() {
+  const { isEnabled, pollingInterval } = useSatisfactoryAPI()
+  const setConnectionStatus = useAppStore((s) => s.setConnectionStatus)
+
+  return useQuery({
+    queryKey: ['power'],
+    queryFn: async () => {
+      try {
+        const data = await fetchPowerData()
+        setConnectionStatus('connected')
+        return data
+      } catch (error) {
+        setConnectionStatus('error')
+        throw error
+      }
+    },
+    enabled: isEnabled,
+    refetchInterval: pollingInterval,
+    retry: 2,
+    staleTime: 0,
+  })
+}
+
+export function useFactories() {
+  const { isEnabled, pollingInterval } = useSatisfactoryAPI()
+
+  return useQuery({
+    queryKey: ['factories'],
+    queryFn: fetchFactories,
+    enabled: isEnabled,
+    refetchInterval: pollingInterval,
+    retry: 2,
+    staleTime: 0,
+  })
+}
+
+export function useContainers() {
+  const { isEnabled, pollingInterval } = useSatisfactoryAPI()
+
+  return useQuery({
+    queryKey: ['containers'],
+    queryFn: fetchContainers,
+    enabled: isEnabled,
+    refetchInterval: pollingInterval,
+    retry: 2,
+    staleTime: 0,
+  })
+}
+
+export function usePlayers() {
+  const { isEnabled, pollingInterval } = useSatisfactoryAPI()
+
+  return useQuery({
+    queryKey: ['players'],
+    queryFn: fetchPlayers,
+    enabled: isEnabled,
+    refetchInterval: pollingInterval,
+    retry: 2,
+    staleTime: 0,
+  })
+}
+
+export function useTrains() {
+  const { isEnabled, pollingInterval } = useSatisfactoryAPI()
+
+  return useQuery({
+    queryKey: ['trains'],
+    queryFn: fetchTrains,
+    enabled: isEnabled,
+    refetchInterval: pollingInterval,
+    retry: 2,
+    staleTime: 0,
+  })
+}
