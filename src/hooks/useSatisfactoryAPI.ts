@@ -10,10 +10,6 @@ import {
 } from '@/services/satisfactoryApi'
 import { useAppStore } from '@/store'
 
-// ============================================================
-// HOOK BASE
-// ============================================================
-
 export function useSatisfactoryAPI() {
   const settings = useAppStore((s) => s.settings)
 
@@ -25,10 +21,6 @@ export function useSatisfactoryAPI() {
 
   return { isEnabled, pollingInterval: settings.pollingInterval }
 }
-
-// ============================================================
-// HOOKS POR RECURSO
-// ============================================================
 
 export function usePowerData() {
   const { isEnabled, pollingInterval } = useSatisfactoryAPI()

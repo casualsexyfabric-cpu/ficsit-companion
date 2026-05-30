@@ -14,6 +14,7 @@ import { Investigacion } from '@/pages/Investigacion'
 import { Historial } from '@/pages/Historial'
 import { Calculadora } from '@/pages/Calculadora'
 import { Configuracion } from '@/pages/Configuracion'
+import { useAlertDetection } from '@/hooks/useAlertDetection'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,10 +25,16 @@ const queryClient = new QueryClient({
   },
 })
 
+function AlertDetector() {
+  useAlertDetection()
+  return null
+}
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
+        <AlertDetector />
         <Routes>
           <Route element={<MainLayout />}>
             <Route index element={<Inicio />} />
