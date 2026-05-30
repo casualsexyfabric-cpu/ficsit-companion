@@ -1,111 +1,132 @@
 // ============================================================
-// TIPOS DE LA API DE SATISFACTORY
+// TIPOS DE LA API — FicsitRemoteMonitoring (FRM)
+// Endpoints: GET http://host:8080/getPower, /getFactory, etc.
 // ============================================================
 
-export interface SatisfactoryCircuit {
-  id: number
-  consumption: number
-  capacity: number
-  batteryInput: number
-  batteryOutput: number
-  batteryStored: number
-  batteryCapacity: number
-  fuseTriggered: boolean
+// --- ELECTRICIDAD ---
+
+export interface FRMPowerCircuit {
+  CircuitGroupID: number
+  PowerProduction: number
+  PowerConsumed: number
+  PowerCapacity: number
+  PowerMaxConsumed: number
+  BatteryInput: number
+  BatteryOutput: number
+  BatteryDifferential: number
+  BatteryPercent: number
+  BatteryCapacity: number
+  BatteryTimeEmpty: string
+  BatteryTimeFull: string
+  AssociatedCircuits?: number[]
+  FuseTriggered: boolean
 }
 
-export interface SatisfactoryGenerator {
-  id: string
-  name: string
-  className: string
-  location: Location3D
-  isRunning: boolean
-  currentOutput: number
-  maxOutput: number
-  fuelType: string
-  circuitId: number
+// --- FÁBRICAS (máquinas individuales) ---
+
+export interface FRMProductionItem {
+  Name: string
+  ClassName: string
+  Amount: number
+  CurrentProd: number
+  MaxProd: number
+  ProdPercent: number
 }
 
-export interface SatisfactoryPowerData {
-  circuits: SatisfactoryCircuit[]
-  generators: SatisfactoryGenerator[]
+export interface FRMIngredient {
+  Name: string
+  ClassName: string
+  Amount: number
+  CurrentConsumed: number
+  MaxConsumed: number
+  ConsPercent: number
 }
 
-export interface Location3D {
+export interface FRMPowerInfo {
+  CircuitGroupID: number
+  CircuitID: number
+  PowerConsumed: number
+  MaxPowerConsumed: number
+}
+
+export interface FRMLocation {
   x: number
   y: number
   z: number
+  rotation?: number
 }
 
-export interface SatisfactoryMachine {
-  id: string
-  name: string
-  className: string
-  location: Location3D
-  isRunning: boolean
-  efficiency: number
-  recipe: string | null
-  inputItems: ItemStack[]
-  outputItems: ItemStack[]
-  hasPower: boolean
-  hasInput: boolean
-  hasOutput: boolean
+export interface FRMMachine {
+  ID: string
+  Name: string
+  ClassName: string
+  location: FRMLocation
+  Recipe: string
+  RecipeClassName: string
+  production: FRMProductionItem[]
+  ingredients: FRMIngredient[]
+  Productivity: number
+  ManuSpeed: number
+  IsConfigured: boolean
+  IsProducing: boolean
+  IsPaused: boolean
+  PowerInfo: FRMPowerInfo
 }
 
-export interface ItemStack {
-  itemClass: string
-  itemName: string
-  amount: number
+// --- JUGADORES ---
+
+export interface FRMInventoryItem {
+  Name: string
+  ClassName: string
+  Amount: number
 }
 
-export interface SatisfactoryFactory {
-  id: string
-  name: string
-  location: Location3D
-  machines: SatisfactoryMachine[]
-  efficiency: number
-  status: 'operative' | 'underproducing' | 'stopped'
-  primaryProduct: string | null
+export interface FRMPlayer {
+  ID: string
+  Name: string
+  ClassName: string
+  location: FRMLocation
+  Online: boolean
+  PlayerHP: number
+  Inventory?: FRMInventoryItem[]
 }
 
-export interface SatisfactoryContainer {
-  id: string
-  name: string
-  location: Location3D
-  items: ItemStack[]
-  maxCapacity: number
-  currentAmount: number
-  fillPercentage: number
+// --- TRENES ---
+
+export interface FRMTrainStop {
+  StationName: string
+  ClassName: string
 }
 
-export interface SatisfactoryPlayer {
-  id: string
-  name: string
-  isOnline: boolean
-  health: number
-  maxHealth: number
-  location: Location3D
-  inventory: ItemStack[]
+export interface FRMTrainWagon {
+  Name: string
+  ClassName: string
+  TotalInventory?: FRMInventoryItem[]
 }
 
-export interface SatisfactoryTrain {
-  id: string
-  name: string
-  status: 'moving' | 'loading' | 'unloading' | 'stopped' | 'deadlock'
-  speed: number
-  currentStation: string | null
-  nextStation: string | null
-  route: string[]
-  wagons: TrainWagon[]
+export interface FRMTrain {
+  TrainName: string
+  PowerInfo: FRMPowerInfo
+  TrainStation: string
+  Derailed: boolean
+  Status: string
+  TimeTable?: FRMTrainStop[]
+  Wagons?: FRMTrainWagon[]
+  location: FRMLocation
 }
 
-export interface TrainWagon {
-  id: string
-  type: string
-  cargo: ItemStack[]
+// --- CONTENEDORES ---
+
+export interface FRMContainer {
+  ID: string
+  Name: string
+  ClassName: string
+  location: FRMLocation
+  Inventory: FRMInventoryItem[]
 }
 
 // ============================================================
-// TIPOS DE ALERTAS
+// TIPOS INTERNOS DE LA APP (no vienen de la API)
 // ============================================================
 
 export type AlertType =
@@ -138,10 +159,6 @@ export interface AlertConfig {
   milestone_ready: boolean
 }
 
-// ============================================================
-// TIPOS DE TAREAS
-// ============================================================
-
 export type TaskStatus = 'pending' | 'inprogress' | 'completed'
 export type TaskHorizon = 'short' | 'medium' | 'long'
 export type TaskAssignee = 'player1' | 'player2' | 'both'
@@ -158,10 +175,6 @@ export interface Task {
   isSessionGoal: boolean
   completedInSession: boolean
 }
-
-// ============================================================
-// TIPOS DE ESTADO DE CONEXIÓN
-// ============================================================
 
 export type ConnectionStatus = 'connected' | 'connecting' | 'disconnected' | 'error'
 

@@ -1,21 +1,25 @@
 import { useNavigate } from 'react-router-dom'
 import { Bell, Settings, Zap } from 'lucide-react'
-import { ProgressBar } from '@/components/ui'
-import { ConnectionStatusIndicator } from '@/components/ui'
+import { ProgressBar, ConnectionStatusIndicator } from '@/components/ui'
 import { useAppStore } from '@/store'
 import { usePowerData } from '@/hooks/useSatisfactoryAPI'
+import { mockPowerCircuits } from '@/lib/mockData'
 
 export function TopBar() {
   const navigate = useNavigate()
   const connectionStatus = useAppStore((s) => s.connectionStatus)
   const alerts = useAppStore((s) => s.alerts)
+  const settings = useAppStore((s) => s.settings)
   const activeAlerts = alerts.filter((a) => a.isActive)
 
-  const { data: powerData } = usePowerData()
+  const { data: liveData } = usePowerData()
 
-  const totalConsumption = powerData?.circuits.reduce((acc, c) => acc + c.consumption, 0) ?? 0
-  const totalCapacity = powerData?.circuits.reduce((acc, c) => acc + c.capacity, 0) ?? 0
-  const percentage = totalCapacity > 0 ? (totalConsumption / totalCapacity) * 100 : 0
+  // Usa datos reales si hay conexión, mock si no
+  const circuits = liveData ?? (settings.apiUrl ? [] : mockPowerCircuits)
+
+  const totalConsumed = circuits.reduce((acc, c) => acc + c.PowerConsumed, 0)
+  const totalCapacity = circuits.reduce((acc, c) => acc + c.PowerCapacity, 0)
+  const percentage = totalCapacity > 0 ? (totalConsumed / totalCapacity) * 100 : 0
 
   return (
     <header className="h-14 bg-surface-100 border-b border-surface-300 flex items-center px-4 gap-6 shrink-0">
@@ -36,12 +40,12 @@ export function TopBar() {
       <div className="w-px h-6 bg-surface-300" />
 
       {/* Balance eléctrico */}
-      {powerData ? (
+      {circuits.length > 0 ? (
         <div className="flex items-center gap-4 flex-1">
           <div className="flex items-center gap-1.5">
             <Zap size={13} className="text-gray-500" />
             <span className="font-mono text-sm text-gray-100">
-              {totalConsumption.toFixed(0)}
+              {totalConsumed.toFixed(0)}
             </span>
             <span className="text-xs text-gray-500">/</span>
             <span className="font-mono text-sm text-gray-400">
@@ -54,24 +58,23 @@ export function TopBar() {
             <ProgressBar value={percentage} max={100} showLabel />
           </div>
 
-          {/* Circuitos */}
+          {/* Punto por circuito */}
           <div className="flex items-center gap-1">
-            {powerData.circuits.map((circuit) => {
-              const pct = circuit.capacity > 0
-                ? (circuit.consumption / circuit.capacity) * 100
+            {circuits.map((circuit) => {
+              const pct = circuit.PowerCapacity > 0
+                ? (circuit.PowerConsumed / circuit.PowerCapacity) * 100
                 : 0
-              const color =
-                circuit.fuseTriggered
-                  ? 'bg-status-error'
-                  : pct >= 90
-                  ? 'bg-status-error'
-                  : pct >= 75
-                  ? 'bg-status-warn'
-                  : 'bg-status-ok'
+              const color = circuit.FuseTriggered
+                ? 'bg-status-error animate-pulse'
+                : pct >= 90
+                ? 'bg-status-error'
+                : pct >= 75
+                ? 'bg-status-warn'
+                : 'bg-status-ok'
               return (
                 <div
-                  key={circuit.id}
-                  title={`Circuito ${circuit.id}: ${pct.toFixed(0)}%`}
+                  key={circuit.CircuitGroupID}
+                  title={`Circuito ${circuit.CircuitGroupID}: ${pct.toFixed(0)}%`}
                   className={`w-2 h-2 rounded-full ${color}`}
                 />
               )
@@ -79,9 +82,9 @@ export function TopBar() {
           </div>
         </div>
       ) : (
-        <div className="flex-1 flex items-center">
+        <div className="flex-1">
           <span className="text-xs text-gray-600 font-rajdhani">
-            Sin datos eléctricos
+            Sin datos eléctricos — configura la URL del túnel
           </span>
         </div>
       )}
@@ -89,7 +92,7 @@ export function TopBar() {
       <div className="flex items-center gap-3 shrink-0">
         <ConnectionStatusIndicator status={connectionStatus} />
 
-        {/* Badge de alertas */}
+        {/* Badge alertas */}
         <button
           onClick={() => navigate('/alertas')}
           className="relative p-1.5 hover:bg-surface-200 rounded transition-colors"

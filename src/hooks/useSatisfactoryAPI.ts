@@ -3,15 +3,15 @@ import { useEffect } from 'react'
 import {
   fetchPowerData,
   fetchFactories,
-  fetchContainers,
   fetchPlayers,
   fetchTrains,
+  fetchContainers,
   setApiBaseUrl,
 } from '@/services/satisfactoryApi'
 import { useAppStore } from '@/store'
 
 // ============================================================
-// HOOK BASE — sincroniza la URL y el estado de conexión
+// HOOK BASE
 // ============================================================
 
 export function useSatisfactoryAPI() {
@@ -27,7 +27,7 @@ export function useSatisfactoryAPI() {
 }
 
 // ============================================================
-// HOOKS ESPECÍFICOS POR RECURSO
+// HOOKS POR RECURSO
 // ============================================================
 
 export function usePowerData() {
@@ -66,19 +66,6 @@ export function useFactories() {
   })
 }
 
-export function useContainers() {
-  const { isEnabled, pollingInterval } = useSatisfactoryAPI()
-
-  return useQuery({
-    queryKey: ['containers'],
-    queryFn: fetchContainers,
-    enabled: isEnabled,
-    refetchInterval: pollingInterval,
-    retry: 2,
-    staleTime: 0,
-  })
-}
-
 export function usePlayers() {
   const { isEnabled, pollingInterval } = useSatisfactoryAPI()
 
@@ -98,6 +85,19 @@ export function useTrains() {
   return useQuery({
     queryKey: ['trains'],
     queryFn: fetchTrains,
+    enabled: isEnabled,
+    refetchInterval: pollingInterval,
+    retry: 2,
+    staleTime: 0,
+  })
+}
+
+export function useContainers() {
+  const { isEnabled, pollingInterval } = useSatisfactoryAPI()
+
+  return useQuery({
+    queryKey: ['containers'],
+    queryFn: fetchContainers,
     enabled: isEnabled,
     refetchInterval: pollingInterval,
     retry: 2,

@@ -1,13 +1,15 @@
 import type {
-  SatisfactoryPowerData,
-  SatisfactoryFactory,
-  SatisfactoryContainer,
-  SatisfactoryPlayer,
-  SatisfactoryTrain,
+  FRMPowerCircuit,
+  FRMMachine,
+  FRMPlayer,
+  FRMTrain,
+  FRMContainer,
 } from '@/types'
 
 // ============================================================
 // CLIENTE BASE
+// FRM expone un servidor HTTP simple con GET requests
+// Puerto por defecto: 8080
 // ============================================================
 
 let baseUrl = ''
@@ -20,45 +22,43 @@ export function getApiBaseUrl() {
   return baseUrl
 }
 
-async function apiRequest<T>(endpoint: string): Promise<T> {
+async function getRequest<T>(endpoint: string): Promise<T> {
   if (!baseUrl) throw new Error('API URL no configurada')
 
   const response = await fetch(`${baseUrl}${endpoint}`, {
-    method: 'POST',
+    method: 'GET',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({}),
   })
 
   if (!response.ok) {
     throw new Error(`Error ${response.status}: ${response.statusText}`)
   }
 
-  const data = await response.json()
-  return data as T
+  return response.json() as Promise<T>
 }
 
 // ============================================================
-// ENDPOINTS
+// ENDPOINTS FRM
 // ============================================================
 
-export async function fetchPowerData(): Promise<SatisfactoryPowerData> {
-  return apiRequest<SatisfactoryPowerData>('/api/v1/power')
+export async function fetchPowerData(): Promise<FRMPowerCircuit[]> {
+  return getRequest<FRMPowerCircuit[]>('/getPower')
 }
 
-export async function fetchFactories(): Promise<SatisfactoryFactory[]> {
-  return apiRequest<SatisfactoryFactory[]>('/api/v1/factories')
+export async function fetchFactories(): Promise<FRMMachine[]> {
+  return getRequest<FRMMachine[]>('/getFactory')
 }
 
-export async function fetchContainers(): Promise<SatisfactoryContainer[]> {
-  return apiRequest<SatisfactoryContainer[]>('/api/v1/containers')
+export async function fetchPlayers(): Promise<FRMPlayer[]> {
+  return getRequest<FRMPlayer[]>('/getPlayer')
 }
 
-export async function fetchPlayers(): Promise<SatisfactoryPlayer[]> {
-  return apiRequest<SatisfactoryPlayer[]>('/api/v1/players')
+export async function fetchTrains(): Promise<FRMTrain[]> {
+  return getRequest<FRMTrain[]>('/getTrains')
 }
 
-export async function fetchTrains(): Promise<SatisfactoryTrain[]> {
-  return apiRequest<SatisfactoryTrain[]>('/api/v1/trains')
+export async function fetchContainers(): Promise<FRMContainer[]> {
+  return getRequest<FRMContainer[]>('/getStorageInv')
 }
 
 // ============================================================
@@ -67,7 +67,7 @@ export async function fetchTrains(): Promise<SatisfactoryTrain[]> {
 
 export async function checkConnection(): Promise<boolean> {
   try {
-    await apiRequest('/api/v1/health')
+    await getRequest('/getPower')
     return true
   } catch {
     return false
